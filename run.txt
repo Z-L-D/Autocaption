@@ -1,1 +1,1 @@
-python autocaption.py --llava_dir "E:\Applications\LocalGPT\Models\vsft-llava-1-5-7b-hf-trl" --input_dir "E:\Applications\LocalSD\DATASETS\Sara" --output_dir "E:\Applications\LocalSD\DATASETS\Sara"
+python autocaption.py --llava_dir "" --input_dir "" --output_dir ""
