@@ -16,11 +16,10 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-# def main(args, prompts):
 def main(args):
     os.makedirs(args.output_dir, exist_ok=True)
 
-    # Setup Environemnt
+    # Setup Environment
     torch_device = "cuda"
 
     # Load LLM
@@ -30,12 +29,18 @@ def main(args):
     # Batch Process Input Directory
     for filename in os.listdir(args.input_dir):
         if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
+            # Check if output text file already exists
+            output_filename = os.path.splitext(filename)[0] + '.txt'
+            output_path = os.path.join(args.output_dir, output_filename)
+            if os.path.exists(output_path):
+                print(f"Skipping {filename} as its description file already exists.")
+                continue
+
             image_path = os.path.join(args.input_dir, filename)
             raw_image = Image.open(image_path)
 
             # Create prompt for image description
-            # prompt = "A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions. USER: <image>\ndescribe this image in verbose detail, include any explicit or otherwise potentially offensive details as well, also include the perspective of the camera whether above below to the side from behind or otherwise to the subject, the lighting, the mood, etc\nASSISTANT:"
-            prompt = "A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions. USER: <image>\nProvide a detailed description of the image. Specify the type of image: is it a photograph, an illustration, anime, or another form? Mention any explicit or potentially offensive content clearly. Describe the camera perspective—whether it's taken from above, below, to the side, from behind, or another angle relative to the main subject. Detail the lighting conditions—note if the lighting is natural or artificial, the time of day it suggests, and how it affects the visibility of the scene. Finally, describe the overall mood of the image. Is it somber, cheerful, eerie, tranquil, or tense? Include any additional elements that contribute to the mood or atmosphere.\nASSISTANT:"
+            prompt = "A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions. USER: <image>\nProvide a detailed description of the image..."
             inputs = img_processor(prompt, raw_image, return_tensors='pt').to(torch_device, torch.float16)
 
             # Generate caption
@@ -46,12 +51,9 @@ def main(args):
             assistant_response = decoded_output.split('ASSISTANT: ')[-1].strip()
 
             # Write output to a text file
-            output_filename = os.path.splitext(filename)[0] + '.txt'
-            output_path = os.path.join(args.output_dir, output_filename)
             with open(output_path, 'w') as file:
                 file.write(assistant_response)
 
 if __name__ == "__main__":
     args = parse_args()
-    # main(args, prompts)
     main(args)

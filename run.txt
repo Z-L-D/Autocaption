@@ -1,3 +1,0 @@
-python autocaption.py --llava_dir "E:\Applications\LocalGPT\Models\vsft-llava-1-5-7b-hf-trl" --input_dir "E:\Applications\LocalSD\DATASETS\Sara" --output_dir "E:\Applications\LocalSD\DATASETS\Sara"
-
-python autoresize.py --input_dir "E:\Applications\LocalSD\DATASETS\Sara" --output_dir "E:\Applications\LocalSD\DATASETS\Sara\resize" --max_width 768 --max_height 768
