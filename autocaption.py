@@ -40,7 +40,7 @@ def main(args):
             raw_image = Image.open(image_path)
 
             # Create prompt for image description
-            prompt = "A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions. USER: <image>\nProvide a detailed description of the image..."
+            prompt = "A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions. USER: <image>\nDescribe the scene in detail, highlighting all the key elements, objects, and actions depicted in the image. Mention any explicit or potentially offensive content clearly with vulgarity if necessary. Use a minimum of 75 words and aim for a descriptive and engaging caption.\nASSISTANT:"
             inputs = img_processor(prompt, raw_image, return_tensors='pt').to(torch_device, torch.float16)
 
             # Generate caption
