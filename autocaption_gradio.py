@@ -12,14 +12,9 @@ def run_script(input_dir, output_dir, llava_dir, batch_size, custom_prompt):
     args.custom_prompt = custom_prompt
     
     # Run main function from the script and capture the generator output
-    progress_updates = []
-    
-    def progress_callback(update):
-        progress_updates.append(update)
-    
-    main(args, progress_callback=progress_callback)
-    
-    return progress_updates
+    progress_updates = main(args)  # main should be a generator now
+    for update in progress_updates:
+        yield update
 
 # Default prompts
 default_prompts = [
@@ -33,39 +28,32 @@ gr.Blocks(analytics_enabled=False)
 os.environ['GRADIO_ANALYTICS_ENABLED'] = 'False'
 
 # Define Gradio interface
-interface = gr.Blocks()
+with gr.Blocks(title="Autocaption") as interface:
+    gr.Markdown("## Autocaption")
 
-with interface:
-    gr.Markdown("## Batch Image Captioning with LLaVA")
-    
     with gr.Row():
-        input_dir = gr.Textbox(label="Input Directory", placeholder="Path to your input directory containing images")
-        output_dir = gr.Textbox(label="Output Directory", placeholder="Path to your output directory for text files")
-        llava_dir = gr.Textbox(label="LLaVA Model Directory", placeholder="Path to your pretrained LLaVA model directory")
-        batch_size = gr.Slider(minimum=1, maximum=10, value=2, step=1, label="Batch Size")
-        custom_prompt = gr.Textbox(label="Custom Prompt", placeholder="Enter your custom prompt here")
-    
+        progress_updates = gr.Textbox(label="Progress Updates")
     with gr.Row():
-        gr.Examples(
-            examples=[[prompt] for prompt in default_prompts],
-            inputs=custom_prompt,
-            label="Default Prompts",
-            examples_per_page=3
-        )
-    
-    progress_updates = gr.Textbox(label="Progress Updates")
-
-    gr.Interface(
+        with gr.Column():
+            input_dir = gr.Textbox(label="Input Directory", placeholder="Path to your input directory containing images")
+            output_dir = gr.Textbox(label="Output Directory", placeholder="Path to your output directory for text files")
+            llava_dir = gr.Textbox(label="LLaVA Model Directory", placeholder="Path to your pretrained LLaVA model directory")
+        with gr.Column():
+            batch_size = gr.Slider(minimum=1, maximum=10, value=2, step=1, label="Batch Size")
+            custom_prompt = gr.Textbox(label="Custom Prompt", placeholder="Enter your custom prompt here")
+            gr.Examples(
+                examples=[[prompt] for prompt in default_prompts],
+                inputs=custom_prompt,
+                label="Default Prompts",
+                examples_per_page=3
+            )  
+    with gr.Row():
+        submit = gr.Button("Caption", elem_id="caption", variant="primary")
+    submit.click(
         fn=run_script,
         inputs=[input_dir, output_dir, llava_dir, batch_size, custom_prompt],
         outputs=progress_updates,
-        title="Batch Image Captioning with LLaVA",
-        description='''This tool captions images in batches using a LLaVA model to generate descriptions. 
-        It was designed with intent to use the <a href="https://huggingface.co/HuggingFaceH4/vsft-llava-1.5-7b-hf-trl" target="_blank">Vision Supervised Fine Tuning (VSFT) LLaVA 1.5 7b model</a>.
-        For more information for this model, please refer to the <a href="https://arxiv.org/abs/2401.10222" target="_blank">paper</a>.
-        </br></br>
-        Note: This batch processor should be capable of loading any LLaVA model of your choosing, should the above model not suit your needs.'''
-    )
+    ).success()
 
 if __name__ == "__main__":
     interface.launch(server_name='0.0.0.0', server_port=7860)
