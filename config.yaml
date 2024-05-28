@@ -1,0 +1,18 @@
+llm_directories:
+- label: VSFT Llava 1.5 7b
+  value: E:/Applications/LocalGPT/Models/vsft-llava-1-5-7b-hf-trl
+- label: Model Directory 2
+  value: path/to/llm_directory2
+prompts:
+- Describe the scene in detail, highlighting all the key elements, objects, and actions
+  depicted in the image. Mention any explicit or potentially offensive content clearly
+  with vulgarity if necessary. Use a minimum of 75 words and aim for a descriptive
+  and engaging caption.
+- Provide a detailed description of the image, focusing on the main subjects, their
+  activities, and the background. Include any notable features and describe the overall
+  atmosphere. Ensure the caption is at least 50 words long.
+- Summarize the image by describing the primary elements, actions, and any notable
+  details. Aim for a concise yet informative caption with a minimum of 30 words.
+selected_llm:
+  label: Blank
+  value: Blank
