@@ -1,6 +1,6 @@
 llm_directories:
-- label: VSFT Llava 1.5 7b
-  value: E:/Applications/LocalGPT/Models/vsft-llava-1-5-7b-hf-trl
+# - label: Model Directory 1
+#   value: path/to/llm_directory1
 # - label: Model Directory 2
 #   value: path/to/llm_directory2
 prompts:

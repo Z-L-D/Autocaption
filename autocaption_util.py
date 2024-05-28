@@ -5,6 +5,10 @@ from PIL import Image
 import torch
 from transformers import LlavaForConditionalGeneration, AutoProcessor
 
+# Global variables to store the LLM and image processor
+text_encoder = None
+img_processor = None
+
 # Arguments
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -21,15 +25,19 @@ def batch_process_images(image_paths, img_processor, torch_device):
     inputs = img_processor(prompts, images, return_tensors='pt', padding=True).to(torch_device)
     return inputs
 
+def load_models(llava_dir):
+    global text_encoder, img_processor
+    if text_encoder is None or img_processor is None:
+        torch_device = "cuda"
+        text_encoder = LlavaForConditionalGeneration.from_pretrained(llava_dir, torch_dtype=torch.float16).to(torch_device)
+        img_processor = AutoProcessor.from_pretrained(llava_dir, torch_dtype=torch.float16)
+
 def main(args):
+    global text_encoder, img_processor
     os.makedirs(args.output_dir, exist_ok=True)
 
-    # Setup Environment
-    torch_device = "cuda"
-
-    # Load LLM
-    text_encoder = LlavaForConditionalGeneration.from_pretrained(args.llava_dir, torch_dtype=torch.float16).to(torch_device)
-    img_processor = AutoProcessor.from_pretrained(args.llava_dir, torch_dtype=torch.float16)
+    # Load models if not already loaded
+    load_models(args.llava_dir)
 
     # List all image files and count text files
     all_image_files = [os.path.join(args.input_dir, f) for f in os.listdir(args.input_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif'))]
@@ -52,7 +60,7 @@ def main(args):
         if not batch_files:
             continue
 
-        inputs = batch_process_images(batch_files, img_processor, torch_device)
+        inputs = batch_process_images(batch_files, img_processor, "cuda")
         outputs = text_encoder.generate(**inputs, max_new_tokens=200, do_sample=False)
         for idx, output in enumerate(outputs):
             decoded_output = img_processor.decode(output[2:], skip_special_tokens=True)
