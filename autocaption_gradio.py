@@ -26,7 +26,7 @@ def update_selected_llm(selected_llm):
     config['selected_llm'] = {'label': label, 'value': selected_llm}
     save_config(config)
 
-def run_script(input_dir, output_dir, llava_dir, batch_size, custom_prompt):
+def run_script(input_dir, output_dir, llava_dir, batch_size, custom_prompt, keep_loaded):
     # Prepare arguments
     args = parse_args()
     args.input_dir = input_dir
@@ -34,6 +34,7 @@ def run_script(input_dir, output_dir, llava_dir, batch_size, custom_prompt):
     args.llava_dir = llava_dir
     args.batch_size = int(batch_size)
     args.custom_prompt = custom_prompt
+    args.keep_loaded = keep_loaded  # Pass the checkbox state to the args
     
     # Run main function from the script and capture the generator output
     progress_updates = main(args)  # main should be a generator now
@@ -56,25 +57,28 @@ with gr.Blocks(title="Autocaption") as interface:
             interactive=True
         )
     with gr.Row():
-        progress_updates = gr.Textbox(label="Captioning Progress")
+        progress_updates = gr.Label(label="Captioning Progress")
     with gr.Row():
         with gr.Column():
             input_dir = gr.Textbox(label="Image Input Directory", placeholder="Path to your input directory containing images")
             output_dir = gr.Textbox(label="Caption Output Directory", placeholder="Path to your output directory for text files")
+            with gr.Row():
+                batch_size = gr.Slider(minimum=1, maximum=10, value=2, step=1, label="Batch Size")
+                keep_loaded = gr.Checkbox(label="Keep LLM Loaded After Captioning", value=True)  # Add the checkbox
         with gr.Column():
-            batch_size = gr.Slider(minimum=1, maximum=10, value=2, step=1, label="Batch Size")
-            custom_prompt = gr.Textbox(label="Custom Prompt", placeholder="Enter your custom prompt here")
-            gr.Examples(
-                examples=[[prompt] for prompt in prompts],
-                inputs=custom_prompt,
-                label="Prompts",
-                examples_per_page=6
-            )  
+            with gr.Group():
+                custom_prompt = gr.Textbox(label="Description Prompt", placeholder="Enter your custom prompt here")
+                examples = gr.Examples(
+                    examples=[[prompt] for prompt in prompts],
+                    inputs=custom_prompt,
+                    label="Library Prompt",
+                    examples_per_page=6
+                )  
     with gr.Row():
         submit = gr.Button("Caption", elem_id="caption", variant="primary")
     submit.click(
         fn=run_script,
-        inputs=[input_dir, output_dir, llm_dir, batch_size, custom_prompt],
+        inputs=[input_dir, output_dir, llm_dir, batch_size, custom_prompt, keep_loaded],  # Include the checkbox in inputs
         outputs=progress_updates,
     ).success()
 

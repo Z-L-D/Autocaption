@@ -1,9 +1,10 @@
 import os
 import sys
 import argparse
+import json
 from PIL import Image
 import torch
-from transformers import LlavaForConditionalGeneration, AutoProcessor
+from transformers import (LlavaForConditionalGeneration, T5ForConditionalGeneration, LlamaForCausalLM, MistralForCausalLM, CLIPModel, AutoProcessor)
 
 # Global variables to store the LLM and image processor
 text_encoder = None
@@ -16,6 +17,7 @@ def parse_args():
     parser.add_argument("--output_dir", type=str, default="")
     parser.add_argument("--llava_dir", type=str, default="")
     parser.add_argument("--batch_size", type=int, default=2)
+    parser.add_argument("--keep_loaded", type=bool, default=True)
     args = parser.parse_args()
     return args
 
@@ -28,9 +30,26 @@ def batch_process_images(image_paths, img_processor, torch_device):
 def load_models(llava_dir):
     global text_encoder, img_processor
     if text_encoder is None or img_processor is None:
+        config_path = os.path.join(llava_dir, 'config.json')
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+        
+        architecture = config['architectures'][0]  # Use the first architecture listed
+
         torch_device = "cuda"
-        text_encoder = LlavaForConditionalGeneration.from_pretrained(llava_dir, torch_dtype=torch.float16).to(torch_device)
+
+        if architecture == "LlavaForConditionalGeneration":
+            text_encoder = LlavaForConditionalGeneration.from_pretrained(llava_dir, torch_dtype=torch.float16).to(torch_device)
+        else:
+            raise ValueError(f"Unsupported architecture, please use Llava models: {architecture}")
+
         img_processor = AutoProcessor.from_pretrained(llava_dir, torch_dtype=torch.float16)
+
+def unload_models():
+    global text_encoder, img_processor
+    text_encoder = None
+    img_processor = None
+    torch.cuda.empty_cache()  # Clear the GPU cache
 
 def main(args):
     global text_encoder, img_processor
@@ -72,6 +91,10 @@ def main(args):
             processed_images += 1
             progress = (processed_images / total_images) * 100
             yield f'Processed {processed_images}/{total_images} images ({progress:.2f}%)'
+
+    # Unload models if not keeping them loaded
+    if not args.keep_loaded:
+        unload_models()
 
 if __name__ == "__main__":
     args = parse_args()
