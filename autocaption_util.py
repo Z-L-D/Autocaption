@@ -214,3 +214,6 @@ def load_dataset(folder_path):
                 samples.append([image_path, text])
     print("Loaded samples:", samples)
     return samples
+
+
+# use examples subsystem for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!

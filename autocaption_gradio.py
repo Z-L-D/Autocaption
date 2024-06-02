@@ -1,6 +1,7 @@
 import gradio as gr
 import os
 import yaml
+from PIL import Image
 from autocaption_util import chat, captioning, load_dataset, parse_args
 
 def load_config(config_path='config.yaml'):
@@ -54,10 +55,17 @@ def run_captioning_script(input_dir, output_dir, llm_dir, batch_size, custom_pro
         yield update
 
 def load_samples(folder_path):
-    return load_dataset(folder_path)
+    samples = load_dataset(folder_path)
+    formatted_samples = []
+    for image_path, text in samples:
+        with Image.open(image_path) as img:
+            width, height = img.size
+        resolution = f"{height} x {width}"
+        formatted_samples.append([image_path, text, resolution])
+    return formatted_samples
 
 def display_sample(sample):
-    image_path, text = sample
+    image_path, text = sample[0], sample[2]
     print("Displaying image:", image_path)
     return image_path, text
 
@@ -94,7 +102,6 @@ with gr.Blocks(title="Autocaption") as interface:
                     image = gr.Image(label="Upload Image", interactive=True)
 
                 with gr.Column():
-                    # chatbox = gr.Chatbot()
                     chatbox = gr.Label(label="Image Caption")
 
             submit_button.click(
@@ -131,19 +138,21 @@ with gr.Blocks(title="Autocaption") as interface:
             ).success()
         
         with gr.Tab("Dataset"):
-            folder_path_input = gr.Textbox(label="Dataset Folder Path", placeholder="Enter the path to the dataset folder")
-
-            load_button = gr.Button("Load Dataset")
+            with gr.Row():
+                folder_path_input = gr.Textbox(label="Dataset Folder Path", placeholder="Enter the path to the dataset folder")
+                load_button = gr.Button("Load Dataset")
             
-            dataset = gr.Dataset(
-                components=[gr.Image(), gr.Textbox()],
-                samples=[],
-                headers=["Image", "Text"],
-                label="Dataset"
-            )
-        
-            image_display = gr.Image(label="Selected Image")
-            text_display = gr.Textbox(label="Selected Text", lines=10)
+            with gr.Row():
+                dataset = gr.Dataset(
+                    components=[gr.Image(visible=False), gr.Textbox(visible=False, text_align="left"), gr.Textbox(visible=False, text_align="left")],
+                    samples=[],
+                    headers=["Image", "Caption", "Resolution"],
+                    label="Dataset"
+                )
+
+            with gr.Row():
+                image_display = gr.Image(label="Selected Image")
+                text_display = gr.Textbox(label="Selected Text", lines=10)
         
             load_button.click(fn=load_samples, inputs=folder_path_input, outputs=dataset, queue=True)
             dataset.select(fn=display_sample, inputs=dataset, outputs=[image_display, text_display], queue=True)
