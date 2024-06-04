@@ -206,14 +206,14 @@ def load_dataset(folder_path):
     for filename in os.listdir(folder_path):
         if filename.lower().endswith(image_extensions):
             image_path = os.path.join(folder_path, filename)
+            print("image_path: " + image_path)
             image_path = os.path.normpath(image_path)  # Normalize the path
+            print("normpath: " + image_path)
             text_path = os.path.join(folder_path, os.path.splitext(filename)[0] + '.txt')
+            print("text_path: " + text_path)
             if os.path.exists(text_path):
                 with open(text_path, 'r') as file:
                     text = file.read()
                 samples.append([image_path, text])
-    print("Loaded samples:", samples)
+    # print("Loaded samples:", samples)
     return samples
-
-
-# use examples subsystem for dataset !!!!!!!!!!!!!!!!!!!!!!!!!!

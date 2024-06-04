@@ -144,7 +144,7 @@ with gr.Blocks(title="Autocaption") as interface:
             
             with gr.Row():
                 dataset = gr.Dataset(
-                    components=[gr.Image(visible=False), gr.Textbox(visible=False, text_align="left"), gr.Textbox(visible=False, text_align="left")],
+                    components=[gr.Image(visible=False, type='filepath'), gr.Textbox(visible=False, text_align="left"), gr.Textbox(visible=False, text_align="left")],
                     samples=[],
                     headers=["Image", "Caption", "Resolution"],
                     label="Dataset"
@@ -160,4 +160,4 @@ with gr.Blocks(title="Autocaption") as interface:
     llm_dir.change(fn=update_selected_llm, inputs=llm_dir, outputs=None)
 
 if __name__ == "__main__":
-    interface.launch(server_name='0.0.0.0', server_port=7860)
+    interface.launch(server_name='0.0.0.0', server_port=7861)
