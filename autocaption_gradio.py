@@ -61,13 +61,21 @@ def load_samples(folder_path):
         with Image.open(image_path) as img:
             width, height = img.size
         resolution = f"{height} x {width}"
-        formatted_samples.append([image_path, text, resolution])
+        formatted_samples.append((image_path, text, resolution))
     return formatted_samples
 
-def display_sample(sample):
-    image_path, text = sample[0], sample[2]
-    print("Displaying image:", image_path)
-    return image_path, text
+def create_dataset_rows(samples):
+    rows = []
+    for image_path, text, resolution in samples:
+        row = gr.Row(
+            components=[
+                gr.Image(value=image_path, label="Image", interactive=False),
+                gr.Textbox(value=text, label="Caption", interactive=False),
+                gr.Textbox(value=resolution, label="Resolution", interactive=False)
+            ]
+        )
+        rows.append(row)
+    return rows
 
 # Disable Gradio Analytics
 gr.Blocks(analytics_enabled=False)
@@ -143,19 +151,14 @@ with gr.Blocks(title="Autocaption") as interface:
                 load_button = gr.Button("Load Dataset")
             
             with gr.Row():
-                dataset = gr.Dataset(
-                    components=[gr.Image(visible=False, type='filepath'), gr.Textbox(visible=False, text_align="left"), gr.Textbox(visible=False, text_align="left")],
-                    samples=[],
-                    headers=["Image", "Caption", "Resolution"],
-                    label="Dataset"
-                )
+                dataset_container = gr.Column()
 
-            with gr.Row():
-                image_display = gr.Image(label="Selected Image")
-                text_display = gr.Textbox(label="Selected Text", lines=10)
-        
-            load_button.click(fn=load_samples, inputs=folder_path_input, outputs=dataset, queue=True)
-            dataset.select(fn=display_sample, inputs=dataset, outputs=[image_display, text_display], queue=True)
+            load_button.click(
+                fn=load_samples, 
+                inputs=folder_path_input, 
+                outputs=dataset_container, 
+                _js='(samples) => create_dataset_rows(samples)'
+            )
 
     llm_dir.change(fn=update_selected_llm, inputs=llm_dir, outputs=None)
 
