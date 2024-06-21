@@ -2,7 +2,7 @@ import gradio as gr
 import os
 import yaml
 from PIL import Image
-from autocaption_util import chat, captioning, load_dataset, parse_args
+from modules.caption import chat, captioning, load_dataset, parse_args
 
 def load_config(config_path='config.yaml'):
     with open(config_path, 'r') as file:

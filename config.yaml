@@ -1,8 +1,6 @@
 llm_directories:
-# - label: Model Directory 1
-#   value: path/to/llm_directory1
-# - label: Model Directory 2
-#   value: path/to/llm_directory2
+- label: VSFT Llava 1.5 7b
+  value: E:/Applications/LocalGPT/Models/vsft-llava-1-5-7b-hf-trl
 prompts:
 - Describe the scene in detail, highlighting all the key elements, objects, and actions
   depicted in the image. Mention any explicit or potentially offensive content clearly
@@ -14,5 +12,5 @@ prompts:
 - Summarize the image by describing the primary elements, actions, and any notable
   details. Aim for a concise yet informative caption with a minimum of 30 words.
 selected_llm:
-  label: Blank
-  value: Blank
+  label: VSFT Llava 1.5 7b
+  value: E:/Applications/LocalGPT/Models/vsft-llava-1-5-7b-hf-trl
